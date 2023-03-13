@@ -9,8 +9,15 @@ const messageStart = document.querySelector('.message-start');
 const rows = table.rows;
 const columnsQnt = 4;
 let total = 0;
+const gameFieldState = [];
 
-function looser() {
+function gameFieldStateUpdater() {
+  for (const cell of cells) {
+    gameFieldState.push(+cell.innerText);
+  }
+}
+
+function isLooser() {
   let result = false;
 
   for (let row = 0; row < rows.length; row++) {
@@ -174,18 +181,11 @@ function moveDown() {
 }
 
 function gameStarter() {
-  const index1 = Math.floor(Math.random() * cells.length);
-  let index2 = Math.floor(Math.random() * cells.length);
+  const index1 = emptyCellFinder();
+  let index2 = emptyCellFinder();
 
   while (index1 === index2) {
-    index2 = Math.floor(Math.random() * cells.length);
-  }
-
-  const value1 = cellsCreator();
-  let value2 = cellsCreator();
-
-  while (value1 === value2) {
-    value2 = cellsCreator();
+    index2 = emptyCellFinder();
   }
 
   cells[index1].innerText = cellsCreator();
@@ -193,6 +193,13 @@ function gameStarter() {
 
   styleUpdater();
 };
+
+function emptyCellFinder() {
+  const emptyCells = [...cells].filter(cell => cell.innerText === '');
+  const randomIndex = Math.floor(Math.random() * emptyCells.length);
+
+  return randomIndex;
+}
 
 function cellsCreator() {
   let resultCell;
@@ -214,25 +221,39 @@ function restarter() {
     cell.className = 'field-cell';
   }
   total = 0;
-  styleUpdater();
-}
+  gameStarter();
+};
 
 function cellsAdder() {
   if (!hasEmptyCells()) {
     return;
   }
 
-  let wasAdded = false;
+  const tempGameFieldState = [];
 
-  while (!wasAdded) {
-    const index = Math.floor(Math.random() * cells.length);
+  for (const cell of cells) {
+    tempGameFieldState.push(+cell.innerText);
+  }
 
-    if (cells[index].innerText === '') {
-      cells[index].innerText = cellsCreator();
-      wasAdded = true;
-    };
-  };
-  styleUpdater();
+  let fieldWasChanged = false;
+
+  for (let i = 0; i < tempGameFieldState.length; i++) {
+    if (tempGameFieldState[i] !== gameFieldState[i]) {
+      fieldWasChanged = true;
+    }
+  }
+
+  if (fieldWasChanged) {
+    const index = emptyCellFinder();
+
+    cells[index].innerText = cellsCreator();
+
+    styleUpdater();
+  }
+
+  gameFieldState.length = 0;
+
+  gameFieldStateUpdater();
 };
 
 function hasEmptyCells() {
@@ -264,10 +285,7 @@ function startHandler(e) {
 
 function restartHandler(e) {
   e.target.classList.value = '';
-  e.target.classList.add('button', 'start');
-  e.target.innerText = 'Start';
-  messageStart.classList.remove('hidden');
-  messageWin.classList.add('hidden');
+  e.target.classList.add('button', 'restart');
   messageLose.classList.add('hidden');
 
   restarter();
@@ -285,37 +303,37 @@ button.addEventListener('click', e => {
 });
 
 document.addEventListener('keyup', e => {
-  if (e.code === 'ArrowLeft') {
+  if (e.code === 'ArrowLeft' && button.innerText === 'Restart') {
     moveLeft();
     styleUpdater();
     messageUpdater();
-    looser();
+    isLooser();
   };
 });
 
 document.addEventListener('keyup', e => {
-  if (e.code === 'ArrowRight') {
+  if (e.code === 'ArrowRight' && button.innerText === 'Restart') {
     moveRight();
     styleUpdater();
     messageUpdater();
-    looser();
+    isLooser();
   };
 });
 
 document.addEventListener('keyup', e => {
-  if (e.code === 'ArrowUp') {
+  if (e.code === 'ArrowUp' && button.innerText === 'Restart') {
     moveUp();
     styleUpdater();
     messageUpdater();
-    looser();
+    isLooser();
   };
 });
 
 document.addEventListener('keyup', e => {
-  if (e.code === 'ArrowDown') {
+  if (e.code === 'ArrowDown' && button.innerText === 'Restart') {
     moveDown();
     messageUpdater();
     styleUpdater();
-    looser();
+    isLooser();
   };
 });
