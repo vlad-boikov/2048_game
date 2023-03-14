@@ -11,7 +11,7 @@ const columnsQnt = 4;
 let total = 0;
 const gameFieldState = [];
 
-function gameFieldStateUpdater() {
+function updateGameFieldState() {
   for (const cell of cells) {
     gameFieldState.push(+cell.innerText);
   }
@@ -21,7 +21,7 @@ function isLooser() {
   let result = false;
 
   for (let row = 0; row < rows.length; row++) {
-    const temp = rowArrayer(rows[row]);
+    const temp = getArrayFromRow(rows[row]);
 
     temp.forEach((el, ind, arr) => {
       if (el === arr[ind + 1]) {
@@ -46,11 +46,11 @@ function isLooser() {
   }
 
   if (!hasEmptyCells() && result === false) {
-    messageLose.classList.remove('hidden');
+    messageLose.classList.removeCells('hidden');
   };
 };
 
-function rowArrayer(row) {
+function getArrayFromRow(row) {
   const result = [];
 
   for (const child of row.children) {
@@ -64,7 +64,7 @@ function rowArrayer(row) {
   return result;
 };
 
-function rowReverseArrayer(arr, row) {
+function getRowFromArray(arr, row) {
   for (let i = 0; i < arr.length; i++) {
     if (arr[i] === 0) {
       row.children[i].innerHTML = '';
@@ -74,10 +74,10 @@ function rowReverseArrayer(arr, row) {
     row.children[i].innerText = arr[i];
   }
 
-  styleUpdater();
+  updateStyle();
 }
 
-function move(row) {
+function moveCells(row) {
   let filtered = row.filter(el => el > 0);
 
   for (let i = 0; i < filtered.length - 1; i++) {
@@ -99,7 +99,7 @@ function move(row) {
   return filtered;
 };
 
-function styleUpdater() {
+function updateStyle() {
   const score = document.querySelector('.game-score');
 
   score.innerText = `${total}`;
@@ -118,30 +118,30 @@ function styleUpdater() {
   };
 };
 
-function moveLeft() {
+function moveCellsLeft() {
   for (const row of rows) {
-    let temp = rowArrayer(row);
+    let temp = getArrayFromRow(row);
 
-    temp = move(temp);
-    rowReverseArrayer(temp, row);
+    temp = moveCells(temp);
+    getRowFromArray(temp, row);
   };
 
-  cellsAdder();
+  addNewCells();
 };
 
-function moveRight() {
+function moveCellsRight() {
   for (const row of rows) {
-    let temp = rowArrayer(row);
+    let temp = getArrayFromRow(row);
 
     temp.reverse();
-    temp = move(temp);
+    temp = moveCells(temp);
     temp.reverse();
-    rowReverseArrayer(temp, row);
+    getRowFromArray(temp, row);
   }
-  cellsAdder();
+  addNewCells();
 }
 
-function columnArayer(collection, index) {
+function getArrayFromColumn(collection, index) {
   return [
     +collection[0].children[index].innerText,
     +collection[1].children[index].innerText,
@@ -150,58 +150,64 @@ function columnArayer(collection, index) {
   ];
 }
 
-function moveUp() {
+function moveCellsUp() {
   for (let i = 0; i < columnsQnt; i++) {
-    const arr = columnArayer(rows, i);
+    const arr = getArrayFromColumn(rows, i);
 
-    const moved = move(arr);
+    const moveCellsd = moveCells(arr);
 
     [...rows].forEach((row, index) => {
-      row.children[i].innerText = moved[index] === 0 ? '' : moved[index];
+      row.children[i].innerText
+        = moveCellsd[index] === 0
+          ? ''
+          : moveCellsd[index];
     });
   };
-  cellsAdder();
+  addNewCells();
 };
 
-function moveDown() {
+function moveCellsDown() {
   for (let i = 0; i < columnsQnt; i++) {
-    const arr = columnArayer(rows, i);
+    const arr = getArrayFromColumn(rows, i);
 
     arr.reverse();
 
-    const moved = move(arr);
+    const moveCellsd = moveCells(arr);
 
-    moved.reverse();
+    moveCellsd.reverse();
 
     [...rows].forEach((row, index) => {
-      row.children[i].innerText = moved[index] === 0 ? '' : moved[index];
+      row.children[i].innerText
+        = moveCellsd[index] === 0
+          ? ''
+          : moveCellsd[index];
     });
   };
-  cellsAdder();
+  addNewCells();
 }
 
-function gameStarter() {
-  const index1 = emptyCellFinder();
-  let index2 = emptyCellFinder();
+function startGame() {
+  const index1 = findEmptyCell();
+  let index2 = findEmptyCell();
 
   while (index1 === index2) {
-    index2 = emptyCellFinder();
+    index2 = findEmptyCell();
   }
 
-  cells[index1].innerText = cellsCreator();
-  cells[index2].innerText = cellsCreator();
+  cells[index1].innerText = generateNewCellValue();
+  cells[index2].innerText = generateNewCellValue();
 
-  styleUpdater();
+  updateStyle();
 };
 
-function emptyCellFinder() {
+function findEmptyCell() {
   const emptyCells = [...cells].filter(cell => cell.innerText === '');
   const randomIndex = Math.floor(Math.random() * emptyCells.length);
 
-  return randomIndex;
+  return [...cells].indexOf(emptyCells[randomIndex]);
 }
 
-function cellsCreator() {
+function generateNewCellValue() {
   let resultCell;
   const probability = Math.random();
 
@@ -214,17 +220,17 @@ function cellsCreator() {
   return resultCell;
 }
 
-function restarter() {
+function restartGame() {
   for (const cell of cells) {
     cell.innerHTML = '';
     cell.classList.value = '';
     cell.className = 'field-cell';
   }
   total = 0;
-  gameStarter();
+  startGame();
 };
 
-function cellsAdder() {
+function addNewCells() {
   if (!hasEmptyCells()) {
     return;
   }
@@ -244,16 +250,16 @@ function cellsAdder() {
   }
 
   if (fieldWasChanged) {
-    const index = emptyCellFinder();
+    const index = findEmptyCell();
 
-    cells[index].innerText = cellsCreator();
+    cells[index].innerText = generateNewCellValue();
 
-    styleUpdater();
+    updateStyle();
   }
 
   gameFieldState.length = 0;
 
-  gameFieldStateUpdater();
+  updateGameFieldState();
 };
 
 function hasEmptyCells() {
@@ -266,74 +272,74 @@ function hasEmptyCells() {
   return false;
 };
 
-function messageUpdater() {
+function updateMessage() {
   for (const cell of cells) {
     if (cell.innerText === '2048') {
-      messageWin.classList.remove('hidden');
+      messageWin.classList.removeCells('hidden');
     };
   };
 };
 
-function startHandler(e) {
+function handleStartButtonClick(e) {
   e.target.classList.value = '';
   e.target.classList.add('button', 'restart');
   e.target.innerText = 'Restart';
   messageStart.classList.add('hidden');
 
-  gameStarter();
+  startGame();
 }
 
-function restartHandler(e) {
+function handleRestartButtonClick(e) {
   e.target.classList.value = '';
   e.target.classList.add('button', 'restart');
   messageLose.classList.add('hidden');
 
-  restarter();
+  restartGame();
 }
 
 button.addEventListener('click', e => {
   switch (e.target.innerText) {
     case 'Start':
-      startHandler(e);
+      handleStartButtonClick(e);
       break;
     case 'Restart':
-      restartHandler(e);
+      handleRestartButtonClick(e);
       break;
   };
 });
 
 document.addEventListener('keyup', e => {
   if (e.code === 'ArrowLeft' && button.innerText === 'Restart') {
-    moveLeft();
-    styleUpdater();
-    messageUpdater();
+    moveCellsLeft();
+    updateStyle();
+    updateMessage();
     isLooser();
   };
 });
 
 document.addEventListener('keyup', e => {
   if (e.code === 'ArrowRight' && button.innerText === 'Restart') {
-    moveRight();
-    styleUpdater();
-    messageUpdater();
+    moveCellsRight();
+    updateStyle();
+    updateMessage();
     isLooser();
   };
 });
 
 document.addEventListener('keyup', e => {
   if (e.code === 'ArrowUp' && button.innerText === 'Restart') {
-    moveUp();
-    styleUpdater();
-    messageUpdater();
+    moveCellsUp();
+    updateStyle();
+    updateMessage();
     isLooser();
   };
 });
 
 document.addEventListener('keyup', e => {
   if (e.code === 'ArrowDown' && button.innerText === 'Restart') {
-    moveDown();
-    messageUpdater();
-    styleUpdater();
+    moveCellsDown();
+    updateMessage();
+    updateStyle();
     isLooser();
   };
 });
